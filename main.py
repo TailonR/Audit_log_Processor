@@ -1,21 +1,10 @@
-#!/usr/bin/env python3
 import re
 from dataclasses import dataclass
 from datetime import datetime
 import json
-# Things to do:
-# 1) Design a clean internal model.
-#     Normalize timestamps (timezone-aware) -- Don't know how to do that since we don't know the orig tz)
-#     Enforce valid statuses (SUCCESS, FAILED, etc.)
-#     Gracefully handle bad data
-# 2) Parse each line into structured data
-#     Need to Handle:
-#       Missing fields
-#       Malformed lines
-#       Unexpected formats
 
 LOG_PATTERN = re.compile(
-    r'(?P<date>\S+)\s+(?P<time>\S+)\s+(?P<level>\S+)\s+(?P<event>\S+)\s*(?P<kv>.*)'
+    r'EMIT:\s(?P<date>\S+)\s+(?P<time>\S+)\s+(?P<level>\S+)\s+(?P<event>\S+)\s*(?P<kv>.*)'
 )
 
 @dataclass
@@ -26,14 +15,14 @@ class AuditEvent:
     fields: dict
 
 
-def parse_kv(kv_string: str) -> dict:
+def parse_kv(kv_string: str):
     fields = {}
     for key_value in re.findall(r'(\w+)=(.*?)(?=\w+=|$)', kv_string):
         fields[key_value[0]] = key_value[1].strip('"')
     return fields
 
 
-def parse_line(line: str) -> AuditEvent:
+def parse_line(line: str):
     match = LOG_PATTERN.match(line.strip())
     if not match:
         raise ValueError(f"Invalid log format: {line}")
@@ -65,9 +54,9 @@ def process_log_file(path: str):
 
                 # Example: alerting rule
                 if event.event in ("LOAD_FAILURE", "AUTH_FAILURE"):
-                    alerts_writer.write(json.dumps({event.event: event.fields}))
+                    alerts_writer.write(f"{json.dumps({event.event: event.fields})}\n")
                 elif event.event in ("RECORD_WARNING"):
-                    warnings_writer.write(json.dumps({event.event: event.fields}))
+                    warnings_writer.write(f"{json.dumps({event.event: event.fields})}\n")
             except Exception as e:
                 print(f"Skipping line: {e}")
 
@@ -75,5 +64,5 @@ def process_log_file(path: str):
 
 
 if __name__ == "__main__":
-    logs = process_log_file("audit_log_sample.log")
+    logs = process_log_file("events.log")
     print(f"Processed {len(logs)} events")
