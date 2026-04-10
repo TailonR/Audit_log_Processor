@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+import re
+from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
+import json
 # Things to do:
 # 1) Design a clean internal model.
 #     Normalize timestamps (timezone-aware) -- Don't know how to do that since we don't know the orig tz)
@@ -11,62 +13,67 @@ from enum import Enum
 #       Missing fields
 #       Malformed lines
 #       Unexpected formats
-log_rec = {
-    'timestamp': '',
-    'log_level': '',
-    'event': '',
-    'data': ''
-}
 
-class Statuses(Enum):
-    INFO = "INFO"
-    WARN = "WARN"
-    ERROR = "ERROR"
+LOG_PATTERN = re.compile(
+    r'(?P<date>\S+)\s+(?P<time>\S+)\s+(?P<level>\S+)\s+(?P<event>\S+)\s*(?P<kv>.*)'
+)
 
-class log_record():
-    def __init__(self, log_line):
-        self.raw_line = log_line.strip()
-        self.valid_statuses = Statuses
-        self.format_data()
+@dataclass
+class AuditEvent:
+    timestamp: datetime
+    level: str
+    event: str
+    fields: dict
 
-    def format_data(self):
-        parts = self.raw_line.split()
-        if len(parts) < 5:
-            raise TypeError("Not enough fields")
-        
-        date_str = parts[0]
-        time_str = parts[1]
-        try:
-            timestamp = datetime.strptime(
-                f"{date_str} {time_str}",
-                "%Y-%m-%d %H:%M:%S"
-            )
-        except ValueError:
-            raise ValueError(f"Invalid timestamp: {date_str} {time_str}")
-        
-        try:
-            status = Statuses(parts[2])
-        except ValueError:
-            raise ValueError(f"Invalid log status: {parts[2]}")
 
-        
-def main():
-    FIXED_FIELDS = ["DATE", "TIME", "LOG_LEVEL", "EVENT"]
-    with open('audit_log_sample.log', 'r') as log_file:
-        for line in log_file:
-            record = log_record(line)
-            # record = line.split()
-            # log_fixed_fields = dict(zip(FIXED_FIELDS, record[:4]))
-            # data_dict = {}
-            # for data in record[4:]:
-            #     key, _, value = data.partition('=')
-            #     data_dict[key] = value
-            # record = log_record({
-            #     'timestamp': f"{log_fixed_fields['DATE']} {log_fixed_fields['TIME']}",
-            #     'log_level': f"{log_fixed_fields['LOG_LEVEL']}",
-            #     'event': f"{log_fixed_fields['EVENT']}",
-            #     'data': data_dict
-            # })
+def parse_kv(kv_string: str) -> dict:
+    fields = {}
+    for key_value in re.findall(r'(\w+)=(.*?)(?=\w+=|$)', kv_string):
+        fields[key_value[0]] = key_value[1].strip('"')
+    return fields
+
+
+def parse_line(line: str) -> AuditEvent:
+    match = LOG_PATTERN.match(line.strip())
+    if not match:
+        raise ValueError(f"Invalid log format: {line}")
+
+    data = match.groupdict()
+
+    timestamp = datetime.strptime(
+        f"{data['date']} {data['time']}",
+        "%Y-%m-%d %H:%M:%S"
+    )
+
+    return AuditEvent(
+        timestamp=timestamp,
+        level=data["level"],
+        event=data["event"],
+        fields=parse_kv(data["kv"])
+    )
+
+
+def process_log_file(path: str):
+    events = []
+
+
+    with open(path) as f, open('alerts_detected.txt', 'w') as alerts_writer, open('warnings_detected.txt', 'w') as warnings_writer:
+        for line in f:
+            try:
+                event = parse_line(line)
+                events.append(event)
+
+                # Example: alerting rule
+                if event.event in ("LOAD_FAILURE", "AUTH_FAILURE"):
+                    alerts_writer.write(json.dumps({event.event: event.fields}))
+                elif event.event in ("RECORD_WARNING"):
+                    warnings_writer.write(json.dumps({event.event: event.fields}))
+            except Exception as e:
+                print(f"Skipping line: {e}")
+
+    return events
+
 
 if __name__ == "__main__":
-    main()
+    logs = process_log_file("audit_log_sample.log")
+    print(f"Processed {len(logs)} events")
