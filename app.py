@@ -19,14 +19,9 @@ LOGS = []
 def emit_events():
     ev=open(EVENT_FILE, "w", buffering=1)
     while event_stream["running"]:
-        for log in LOGS:
-            if not event_stream["running"]:
-                break
-
-            # Simulate emitting event (replace with real sink later)
-            print(f"EMIT: {log}", file=ev, flush=True)
-
-            time.sleep(event_stream["interval"])
+        log = random.choice(LOGS)
+        print(f"EMIT: {log}", file=ev, flush=True)
+        time.sleep(event_stream["interval"])
 
 
 @app.route("/start", methods=["POST"])
@@ -63,4 +58,4 @@ if __name__ == "__main__":
     with open(LOG_FILE, "r") as f:
         for line in f:
             LOGS.append(line.strip())
-    app.run(debug=False)
+    app.run(debug=True)
