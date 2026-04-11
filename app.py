@@ -20,7 +20,7 @@ def emit_events():
     ev=open(EVENT_FILE, "w", buffering=1)
     while event_stream["running"]:
         log = random.choice(LOGS)
-        print(f"EMIT: {log}", file=ev, flush=True)
+        print(f"{log}", file=ev, flush=True)
         time.sleep(event_stream["interval"])
 
 
