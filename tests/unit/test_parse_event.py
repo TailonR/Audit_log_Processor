@@ -9,8 +9,7 @@ def test_parse_ok_event():
           "JobID": "78421",
           "User": "ASCCRLFILOTH",
           "Host": "server01"
-        },
-        "malformed": False
+        }
       }
 
     log = parse_event(event)
@@ -25,8 +24,7 @@ def test_parse_ok_event_with_spaces_in_field_values():
       "fields": {
         "Line": "102",
         "Issue": "Missing optional field"
-      },
-      "malformed": False
+      }
     }
     log = parse_event(event)
 
@@ -53,3 +51,14 @@ def test_parse_event_empty_fields():
     log = parse_event(event)
 
     assert log == "2026-04-09 08:15:27 INFO VALIDATION_END"
+
+def test_parse_event_missing_time():
+    event = {
+      "event": "VALIDATION_END",
+      "timestamp": "2026-04-09",
+      "level": "INFO",
+      "fields": {}
+    }
+    log = parse_event(event)
+
+    assert log == "2026-04-09 00:00:00 INFO VALIDATION_END"

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import json
 from datetime import datetime
+import enum
 
 class ParseError:
     OK = "OK"
@@ -72,7 +73,13 @@ def parse_kv(kv_string: str):
 
 
 def parse_line(line: str):
-    pattern=re.compile(r'(?P<date>\S+)\s+(?P<time>\S+)\s+(?P<level>\S+)\s+(?P<event>\S+)\s*(?P<kv>.*)')
+    pattern = re.compile(
+        r'(?P<date>\S+)\s+'
+        r'(?P<time>\S+)\s+'
+        r'(?P<level>INFO|WARN|ERROR|DEBUG)\s+'
+        r'(?P<event>[A-Z_]+)\s*'
+        r'(?P<kv>.*)'
+    )
 
     match = pattern.match(line.strip())
     if not match:
@@ -80,10 +87,13 @@ def parse_line(line: str):
     
     data = match.groupdict()
 
-    timestamp = datetime.strptime(
-        f"{data['date']} {data['time']}",
-        "%Y-%m-%d %H:%M:%S"
-    )
+    try:
+        timestamp = datetime.strptime(
+            f"{data['date']} {data['time']}",
+            "%Y-%m-%d %H:%M:%S"
+        )
+    except ValueError:
+        raise ValueError("Invalid timestamp")
 
     return AuditEvent(
         timestamp=timestamp,
