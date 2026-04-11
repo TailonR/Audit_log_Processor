@@ -135,5 +135,5 @@ def process_log_file(path: str):
 
 
 if __name__ == "__main__":
-    logs = process_log_file("events.log")
+    logs = process_log_file("event_logs.log")
     print(f"Metrics: {logs['diagnostics']}")

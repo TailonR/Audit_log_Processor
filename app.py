@@ -2,8 +2,27 @@ from flask import Flask, jsonify, request
 import threading
 import time
 import random
+import logging
+import json
+from datetime import datetime
+
+logging.getLogger('werkzeug').setLevel(logging.WARNING)
+
+LOGGER = logging.getLogger("realtime_logger")
+LOGGER.setLevel(logging.INFO)
+
+file_handler = logging.FileHandler("event_logs.log")
+formatter = logging.Formatter("%(message)s")
+file_handler.setFormatter(formatter)
+
+LOGGER.addHandler(file_handler)
+
+LOGGER.propagate = False
 
 app = Flask(__name__)
+
+EVENT_FILE = "events_sample.json"
+EVENTS = []
 
 # Shared state
 event_stream = {
@@ -12,17 +31,27 @@ event_stream = {
     "thread": None
 }
 
-LOG_FILE = "audit_log_sample.log"
-EVENT_FILE = "events.log"
-LOGS = []
-
-def emit_events():
-    ev=open(EVENT_FILE, "w", buffering=1)
+def log_event():
     while event_stream["running"]:
-        log = random.choice(LOGS)
-        print(f"{log}", file=ev, flush=True)
-        time.sleep(event_stream["interval"])
+        event = random.choice(EVENTS)
+        log = parse_event(event)
+        LOGGER.info(log)
 
+def format_timestamp(ts):
+    return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+
+def format_fields(fields):
+    fields_string = ""
+    for k,v in fields.items():
+        fields_string += f" {k}={v}"
+    return fields_string
+
+def parse_event(event):
+    required = ["event", "timestamp", "level", "fields"]
+    if all(event.get(k) is None for k in required[:3]) and event.get("fields") == {} :
+        return "??????? ??????? ???????"
+    
+    return f"{format_timestamp(event['timestamp'])} {event['level']} {event['event']}{format_fields(event['fields'])}"
 
 @app.route("/start", methods=["POST"])
 def start():
@@ -33,7 +62,7 @@ def start():
     event_stream["interval"] = interval
     event_stream["running"] = True
 
-    thread = threading.Thread(target=emit_events, daemon=True)
+    thread = threading.Thread(target=log_event, daemon=True)
     event_stream["thread"] = thread
     thread.start()
 
@@ -55,7 +84,7 @@ def status():
 
 
 if __name__ == "__main__":
-    with open(LOG_FILE, "r") as f:
-        for line in f:
-            LOGS.append(line.strip())
+    with open(EVENT_FILE, "r") as f:
+        EVENTS = json.load(f)
+
     app.run(debug=True)

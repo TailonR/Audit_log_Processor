@@ -1,6 +1,7 @@
 venv/
 alerts_detected.txt
-events.log
+emitted_logs.log
 warnings_detected.txt
 log_parse_failures.txt
 test.log
+event_logs.log

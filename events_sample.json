@@ -1,0 +1,223 @@
+[
+  {
+    "event": "START_PROCESS",
+    "timestamp": "2026-04-09T08:15:23",
+    "level": "INFO",
+    "fields": {
+      "JobID": "78421",
+      "User": "ASCCRLFILOTH",
+      "Host": "server01"
+    }
+  },
+  {
+    "event": "FILE_RECEIVED",
+    "timestamp": "2026-04-09T08:15:24",
+    "level": "INFO",
+    "fields": {
+      "File": "crdl01in_20260409.dat",
+      "Size": "24576 bytes"
+    }
+  },
+  {
+    "event": "UNKNOWN",
+    "timestamp": "2026-04-09T08:15:25",
+    "level": "INFO",
+    "fields": {}
+  },
+  {
+    "event": "RECORD_WARNING",
+    "timestamp": "2026-04-09T08:15:26",
+    "level": "WARN",
+    "fields": {}
+  },
+  {
+    "event": "VALIDATION_END",
+    "timestamp": "2026-04-09T08:15:27",
+    "level": "INFO",
+    "fields": {
+      "Status": "SUCCESS"
+    }
+  },
+  {
+    "event": "TRANSFORM_START",
+    "timestamp": "2026-04-09T08:15:28",
+    "level": "INFO",
+    "fields": {
+      "File": "crdl01in_20260409.dat"
+    }
+  },
+  {
+    "event": "TRANSFORM_END",
+    "timestamp": "2026-04-09T08:15:29",
+    "level": "INFO",
+    "fields": {
+      "File": "crdl01in_20260409.dat",
+      "Duration": "2s"
+    }
+  },
+  {
+    "event": "LOAD_START",
+    "timestamp": "2026-04-09T08:15:30",
+    "level": "INFO",
+    "fields": {
+      "Target": "DB_PROD",
+      "Table": "student_records"
+    }
+  },
+  {
+    "event": "LOAD_START",
+    "timestamp": "2026-04-09T08:15:31Z",
+    "level": "INFO",
+    "fields": {
+      "Target": "DB_PROD",
+      "Table": "student_records"
+    }
+  },
+  {
+    "event": "LOAD_START",
+    "timestamp": "2026-04-09T08:15:32",
+    "level": "INFO",
+    "fields": {
+      "Target": "DB_PROD",
+      "Table": "student_records"
+    }
+  },
+  {
+    "event": "LOAD_START",
+    "timestamp": "2026-04-09T08:15:33",
+    "level": "INFO",
+    "fields": {
+      "Target": "DB_PROD",
+      "Table": null
+    }
+  },
+  {
+    "event": "RECORD_WARNING",
+    "timestamp": "2026-04-09T08:15:26",
+    "level": "WARN",
+    "fields": {
+      "Line": "102",
+      "Issue": "Missing optional field"
+    }
+  },
+  {
+    "event": "LOAD_FAILURE",
+    "timestamp": "2026-04-09T08:15:34",
+    "level": "ERROR",
+    "fields": {
+      "RecordID": null,
+      "Reason": "Constraint violation"
+    }
+  },
+  {
+    "event": "LOAD_FAILURE",
+    "timestamp": "2026-04-09T08:15:36",
+    "level": "ERROR",
+    "fields": {
+      "RecordID": "55672",
+      "Reason": null
+    }
+  },
+  {
+    "event": "LOAD_SUCCESS",
+    "timestamp": "2026-04-09T08:15:37",
+    "level": "INFO",
+    "fields": {
+      "record": 55672
+    }
+  },
+  {
+    "event": "LOAD_SUCCESS",
+    "timestamp": "2026-04-09T08:15:38",
+    "level": "INFO",
+    "fields": {
+      "RecordID": "55672",
+      "Status": "OK"
+    }
+  },
+  {
+    "event": "LOAD_SUCCESS",
+    "timestamp": "2026-04-09T08:15:38",
+    "level": "INFO",
+    "fields": {
+      "record": "55672"
+    }
+  },
+  {
+    "event": "LOAD_COMPLETE",
+    "timestamp": "2026-04-09T08:15:39",
+    "level": "INFO",
+    "fields": {
+      "RowsProcessed": 1245,
+      "RowsFailed": 1
+    }
+  },
+  {
+    "event": "LOAD_COMPLETE",
+    "timestamp": "2026-04-09T08:15:40",
+    "level": "INFO",
+    "fields": {
+      "RowsProcessed": 1245,
+      "RowsFailed": 1
+    }
+  },
+  {
+    "event": "ARCHIVE_FILE",
+    "timestamp": "2026-04-09T08:15:41",
+    "level": "INFO",
+    "fields": {
+      "ArchivePath": "/archive/20260409/"
+    }
+  },
+  {
+    "event": "ARCHIVE_FILE",
+    "timestamp": "2026-04-09T08:15:42",
+    "level": "INFO",
+    "fields": {
+      "File": "crdl01in_20260409.dat"
+    }
+  },
+  {
+    "event": "LOAD_FAILURE",
+    "timestamp": "2026-04-09T08:15:43",
+    "level": "ERROR",
+    "fields": {
+      "RecordID": "55672",
+      "Reason": "Constraint violation"
+    }
+  },
+  {
+    "event": "END_PROCESS",
+    "timestamp": "2026-04-09T08:15:44",
+    "level": "INFO",
+    "fields": {
+      "JobID": "78421",
+      "Status": "COMPLETED",
+      "Duration": "19s"
+    }
+  },
+  {
+    "event": null,
+    "timestamp": null,
+    "level": null,
+    "fields": {}
+  },
+  {
+    "event": "START_PROCESS",
+    "timestamp": "2026-04-09T08:15:45",
+    "level": "INFO",
+    "fields": {
+      "JobID": "78421",
+      "User": null
+    }
+  },
+  {
+    "event": "START_PROCESS",
+    "timestamp": "2026-04-09T08:15:46",
+    "level": "INFO",
+    "fields": {
+      "JobID": null,
+      "User": "ASCCRLFILOTH"
+    }
+  }
+]
