@@ -34,7 +34,7 @@ def validate_line(line: str):
             "raw": line
         }
 
-    date, time, level, event = parts[:4]
+    date, time, _, _ = parts[:4]
     rest = parts[4]
 
     # 2. timestamp validation (try formats)
@@ -67,7 +67,7 @@ def is_valid_timestamp(date, time):
 def parse_kv(kv_string: str):
     fields = {}
     for key_value in re.findall(r'(\w+)=(.*?)(?=\w+=|$)', kv_string):
-        fields[key_value[0]] = key_value[1].strip('"')
+        fields[key_value[0].strip()] = key_value[1].strip()
     return fields
 
 
@@ -75,6 +75,9 @@ def parse_line(line: str):
     pattern=re.compile(r'(?P<date>\S+)\s+(?P<time>\S+)\s+(?P<level>\S+)\s+(?P<event>\S+)\s*(?P<kv>.*)')
 
     match = pattern.match(line.strip())
+    if not match:
+        raise ValueError(f"Invalid log format: {line}")
+    
     data = match.groupdict()
 
     timestamp = datetime.strptime(
@@ -88,8 +91,6 @@ def parse_line(line: str):
         event=data["event"],
         fields=parse_kv(data["kv"])
     )
-    return 
-
 
 def process_log_file(path: str):
     events = []

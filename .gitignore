@@ -3,3 +3,4 @@ alerts_detected.txt
 events.log
 warnings_detected.txt
 log_parse_failures.txt
+test.log
