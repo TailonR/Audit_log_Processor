@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 import json
-from datetime import datetime
+import time
 
 class ParseError:
     OK = "OK"
@@ -141,3 +141,16 @@ def process_log_file(path):
                 parse_fail_writer.write(f"{json.dumps(validation)}\n")
 
     return { "events": events, "diagnostics": metrics }
+
+def write_metrics(metrics):
+    with open("metrics.json", "w") as f:
+        json.dump(metrics, f)
+
+def run():
+    while True:
+        logs = process_log_file("event_logs.log")
+        write_metrics(logs['diagnostics'])
+        time.sleep(60)
+
+if __name__ == "__main__":
+    run()
