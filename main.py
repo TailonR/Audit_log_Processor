@@ -141,8 +141,3 @@ def process_log_file(path):
                 parse_fail_writer.write(f"{json.dumps(validation)}\n")
 
     return { "events": events, "diagnostics": metrics }
-
-
-if __name__ == "__main__":
-    logs = process_log_file("event_logs.log")
-    print(f"Metrics: {logs['diagnostics']}")

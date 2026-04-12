@@ -6,6 +6,7 @@ from logging.handlers import RotatingFileHandler
 import json
 from datetime import datetime
 from enum import Enum
+from main import process_log_file
 
 logging.getLogger('werkzeug').setLevel(logging.WARNING)
 
@@ -101,6 +102,13 @@ def status():
         "interval": event_stream["interval"]
     })
 
+@app.route("/analyze", methods=["POST"])
+def trigger_analysis():
+    try:
+        result = process_log_file("event_logs.log")
+        return jsonify(result["diagnostics"])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     with open(EVENT_FILE, "r") as f:
