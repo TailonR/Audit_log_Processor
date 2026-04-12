@@ -3,15 +3,21 @@ import threading
 import time
 import random
 import logging
+from logging.handlers import RotatingFileHandler
 import json
 from datetime import datetime
+from enum import Enum
 
 logging.getLogger('werkzeug').setLevel(logging.WARNING)
 
 LOGGER = logging.getLogger("realtime_logger")
 LOGGER.setLevel(logging.INFO)
 
-file_handler = logging.FileHandler("event_logs.log")
+file_handler = RotatingFileHandler(
+    "event_logs.log",
+    maxBytes=10_000_000,
+    backupCount=1
+)
 formatter = logging.Formatter("%(message)s")
 file_handler.setFormatter(formatter)
 
@@ -31,11 +37,25 @@ event_stream = {
     "thread": None
 }
 
+class LogLevel(Enum):
+    DEBUG = logging.DEBUG
+    INFO = logging.INFO
+    WARN = logging.WARNING
+    ERROR = logging.ERROR
+    CRITICAL = logging.CRITICAL
+
+def get_log_level(level_str):
+    return LogLevel[level_str.upper()].value
+
 def log_event():
     while event_stream["running"]:
         event = random.choice(EVENTS)
         log = parse_event(event)
-        LOGGER.info(log)
+        if event["level"]:
+            level = get_log_level(event["level"])
+        else:
+            level = get_log_level("INFO")
+        LOGGER.log(level, log)
 
 def format_timestamp(ts):
     return datetime.fromisoformat(ts.replace("Z", "+00:00"))

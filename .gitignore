@@ -5,3 +5,4 @@ warnings_detected.txt
 log_parse_failures.txt
 test.log
 event_logs.log
+event_logs.log.1
