@@ -58,7 +58,8 @@ def log_event():
         LOGGER.log(level, log)
 
 def format_timestamp(ts):
-    return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 def format_fields(fields):
     fields_string = ""
