@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, request
 import threading
-import time
 import random
 import logging
 from logging.handlers import RotatingFileHandler

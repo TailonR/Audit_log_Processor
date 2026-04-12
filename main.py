@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from datetime import datetime
 import json
 from datetime import datetime
-import enum
 
 class ParseError:
     OK = "OK"
@@ -19,7 +18,7 @@ class AuditEvent:
     event: str
     fields: dict
 
-def validate_line(line: str):
+def validate_line(line):
     line = line.strip()
     # 1. basic sanity
     if not line or "????" in line:
@@ -65,14 +64,14 @@ def is_valid_timestamp(date, time):
     except ValueError:
         return False
 
-def parse_kv(kv_string: str):
+def parse_kv(kv_string):
     fields = {}
     for key_value in re.findall(r'(\w+)=(.*?)(?=\w+=|$)', kv_string):
         fields[key_value[0].strip()] = key_value[1].strip()
     return fields
 
 
-def parse_line(line: str):
+def parse_line(line):
     pattern = re.compile(
         r'(?P<date>\S+)\s+'
         r'(?P<time>\S+)\s+'
@@ -102,7 +101,7 @@ def parse_line(line: str):
         fields=parse_kv(data["kv"])
     )
 
-def process_log_file(path: str):
+def process_log_file(path):
     events = []
     metrics = {
         "total_lines": 0,
