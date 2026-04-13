@@ -4,13 +4,13 @@ import subprocess
 import time
 import json
 
-from main import process_log_file
+from log_analyzer import process_log_file
 
 def test_all_layers():
     gen = subprocess.Popen(["python3", "log_generator.py"])
     time.sleep(5)
 
-    analyzer = subprocess.Popen(["python3", "main.py"])
+    analyzer = subprocess.Popen(["python3", "log_analyzer.py"])
 
 
     gen.terminate()
@@ -31,7 +31,7 @@ def test_all_layers():
 
 def test_concurrent_read_write():
     gen = subprocess.Popen(["python", "log_generator.py"])
-    analyzer = subprocess.Popen(["python", "main.py"])
+    analyzer = subprocess.Popen(["python", "log_analyzer.py"])
 
     time.sleep(10)
 

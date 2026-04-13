@@ -1,6 +1,6 @@
-from main import parse_kv
+from log_analyzer import parse_kv
 import pytest
-from main import ParseException, ParseError
+from log_analyzer import ParseException, ParseError
 def test_parse_kv_basic():
     s = "user=admin jobId=123"
     result = parse_kv(s)

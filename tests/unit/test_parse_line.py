@@ -1,4 +1,4 @@
-from main import parse_line, ParseException, ParseError
+from log_analyzer import parse_line, ParseException, ParseError
 import pytest
 
 def test_parse_line_success():

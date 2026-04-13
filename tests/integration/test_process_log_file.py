@@ -1,4 +1,4 @@
-from main import process_log_file
+from log_analyzer import process_log_file
 
 def test_process_log_file():
     with open("test.log", "w") as file:

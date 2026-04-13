@@ -2,7 +2,7 @@
 import time
 import json
 
-from main import process_log_file, write_metrics
+from log_analyzer import process_log_file, write_metrics
 
 
 def test_metrics_file_valid_json():
