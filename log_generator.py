@@ -54,7 +54,10 @@ class LogLevel(Enum):
     CRITICAL = logging.CRITICAL
 
 def get_log_level(level_str):
-    return LogLevel[level_str.upper()].value
+    try:
+        return LogLevel[level_str.upper()].value
+    except KeyError:
+        return logging.INFO
 
 def log_event(events):
     event = random.choice(events)
