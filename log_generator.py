@@ -5,6 +5,7 @@ from datetime import datetime
 from enum import Enum
 import json
 import time
+import os
 
 logging.getLogger('werkzeug').setLevel(logging.WARNING)
 
@@ -75,11 +76,15 @@ def get_status():
     }
 
 def write_state():
-    with open("generator_state.json", "w") as f:
-        json.dump({
+  tmp_file = "state.tmp"
+
+  with open(tmp_file, "w") as f:
+      json.dump({
             "running": True,
             "timestamp": time.time()
         }, f)
+
+  os.replace(tmp_file, "generator_state.json")
 
 def run():
     events = load_events()
