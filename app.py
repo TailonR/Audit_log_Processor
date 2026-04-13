@@ -34,7 +34,7 @@ def analyzer_status():
     except json.JSONDecodeError:
         return jsonify({"error": "Corrupted state file"}), 500
 
-@app.route("/log-metrics", methods=["GET"])
+@app.route("/log-metrics")
 def trigger_analysis():
     try:
         with open("metrics.json") as f:
@@ -45,7 +45,7 @@ def trigger_analysis():
     except json.JSONDecodeError:
         return jsonify({"error": "Corrupted metrics file"}), 500
 
-@app.route("/stop-logging", methods=["POST"])
+@app.route("/stop-logging")
 def stop_logging():
     try:
         with open("generator_state.json") as f:
@@ -65,7 +65,7 @@ def stop_logging():
     except ProcessLookupError:
         return jsonify({"error": "Process not running"}), 404
 
-@app.route("/stop-analysis", methods=["GET"])
+@app.route("/stop-analysis")
 def stop_analyzer():
     try:
         with open("analyzer_state.json") as f:
