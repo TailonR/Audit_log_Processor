@@ -63,3 +63,10 @@ def test_parse_line_invalid():
         parse_line("invalid line")
 
     assert exc_info.value.error_type == ParseError.INVALID_LOG_FORMAT
+
+def test_kv_edge_cases():
+    line = "2026-04-09 10:00:00 INFO LOGIN user= role=admin"
+    with pytest.raises(ParseException) as exc_info:
+        parse_line(line)
+
+    assert exc_info.value.error_type == ParseError.INVALID_KEY_VALUE

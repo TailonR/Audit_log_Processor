@@ -16,3 +16,11 @@ def test_empty_file():
 
     result = process_log_file("test.log")
     assert result["diagnostics"]["total_lines"] == 0
+
+def test_corrupt_log_handling():
+    with open("event_logs.log", "w") as f:
+        f.write("THIS IS NOT A VALID LOG\n")
+
+    result = process_log_file("event_logs.log")
+
+    assert result["diagnostics"]["invalid_log_format"] >= 1
