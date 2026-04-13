@@ -1,9 +1,28 @@
+import os
 import re
 from dataclasses import dataclass
 from datetime import datetime
 import json
 import time
 from enum import Enum
+import threading
+import signal
+
+status = {
+    "running": False,
+    "pid": None,
+    "timestamp": None
+}
+
+stop_event = threading.Event()
+def handle_sigterm(signum, frame):
+    print("Received SIGTERM, shutting down gracefully...")
+    status["running"] = False
+    status["timestamp"] = time.time()
+    write_state()
+    stop_event.set()
+
+signal.signal(signal.SIGTERM, handle_sigterm)
 
 class ParseError(Enum):
     INVALID_LOG_FORMAT = "INVALID_LOG_FORMAT"
@@ -111,10 +130,31 @@ def write_metrics(metrics):
     with open("metrics.json", "w") as f:
         json.dump(metrics, f)
 
+def get_status():
+    return {
+        "running": status["running"],
+        "interval": status["interval"]
+    }
+
+def write_state():
+  tmp_file = "analyzer_state.tmp"
+
+  with open(tmp_file, "w") as f:
+      json.dump({
+            "running": status["running"],
+            "pid": status["pid"],
+            "timestamp": time.time()
+        }, f)
+
+  os.replace(tmp_file, "analyzer_state.json")
+  
 def run():
-    while True:
+    status["running"] = True
+    status["pid"] = os.getpid()
+    while not stop_event.is_set():
         logs = process_log_file("event_logs.log")
         write_metrics(logs['diagnostics'])
+        write_state()
         time.sleep(60)
 
 if __name__ == "__main__":

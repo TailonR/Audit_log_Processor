@@ -8,3 +8,4 @@ event_logs.log
 event_logs.log.1
 metrics.json
 generator_state.json
+analyzer_state.json

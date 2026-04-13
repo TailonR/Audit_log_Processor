@@ -6,6 +6,8 @@ from enum import Enum
 import json
 import time
 import os
+import threading
+import signal
 
 logging.getLogger('werkzeug').setLevel(logging.WARNING)
 
@@ -30,8 +32,19 @@ def load_events():
 
 event_stream = {
     "running": False,
-    "interval": 1.0
+    "pid": None,
+    "timestamp": None
 }
+
+stop_event = threading.Event()
+def handle_sigterm(signum, frame):
+    print("Received SIGTERM, shutting down gracefully...")
+    event_stream["running"] = False
+    event_stream["timestamp"] = time.time()
+    write_state()
+    stop_event.set()
+
+signal.signal(signal.SIGTERM, handle_sigterm)
 
 class LogLevel(Enum):
     DEBUG = logging.DEBUG
@@ -80,18 +93,21 @@ def write_state():
 
   with open(tmp_file, "w") as f:
       json.dump({
-            "running": True,
+            "running": event_stream["running"],
+            "pid": event_stream["pid"],
             "timestamp": time.time()
         }, f)
 
   os.replace(tmp_file, "generator_state.json")
 
 def run():
+    event_stream["running"] = True
+    event_stream["pid"] = os.getpid()
     events = load_events()
-    while True:
+    while not stop_event.is_set():
         log_event(events)
         write_state()
-        time.sleep(event_stream["interval"])
+        time.sleep(2)
 
 if __name__ == "__main__":
     run()
