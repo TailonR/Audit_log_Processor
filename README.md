@@ -28,28 +28,33 @@ The generator and analyzer communicate with the API via shared state files:
 Returns status of the logger.
 
 Response:
+```json
 {
   "running": true,
   "alive": true,
   "pid": 37461,
   "timestamp": 1776043339.850122
 }
+```
 
 ### GET /analyzer-status
 Returns status of the log analyzer.
 
 Response:
+```json
 {
   "running": true,
   "alive": true,
   "pid": 35859,
   "timestamp": 1776042925.129668
 }
+```
 
 ### GET /log-metrics
 Returns aggregated metrics.
 
 Response:
+```json
 {
   "invalid_log_format": 22,
   "parse_fail_key_value": 0,
@@ -57,6 +62,7 @@ Response:
   "parse_success": 216,
   "total_lines": 238
 }
+```
 
 ### POST /stop-logging
 Gracefully signals the logger to stop
@@ -82,6 +88,7 @@ Gracefully signals the analyzer to stop
 
 ## Parsed Output
 
+```json
 {
     "event": "START_PROCESS",
     "timestamp": "2026-04-09T08:15:23",
@@ -92,6 +99,7 @@ Gracefully signals the analyzer to stop
       "Host": "server01"
     }
 }
+```
 
 ## Installation
 
