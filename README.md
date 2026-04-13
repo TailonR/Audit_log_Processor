@@ -109,6 +109,8 @@ Gracefully signals the analyzer to stop
 python3 -m venv .venv
 source .venv/bin/activate
 ```
+Note: If you are unable run venv and are unable to install python3.xx-venv then you should try uv from astral
+
 2. Install dependencies:
 
 ```bash
@@ -178,6 +180,7 @@ The repository includes both unit tests and integration tests under `tests/`.
 
 ## Future Improvements
 
+- Update installation instructions to use uv
 - Replace file-based state with Redis or a database
 - Containerize with Docker
 
