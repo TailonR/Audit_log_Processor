@@ -51,7 +51,6 @@ class LogLevel(Enum):
     INFO = logging.INFO
     WARN = logging.WARNING
     ERROR = logging.ERROR
-    CRITICAL = logging.CRITICAL
 
 def get_log_level(level_str):
     try:
