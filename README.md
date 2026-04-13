@@ -104,22 +104,30 @@ Gracefully signals the analyzer to stop
 
    pip install -r requirements.txt
 
-## Running the System (Local Dev)
+# Running the System (Local Dev)
 
-# Terminal 1 – Start log generator
+## Terminal 1 – Start log generator
+```bash
 python3 log_generator.py
+```
 
-# Terminal 2 – Start processor
+## Terminal 2 – Start analyzer
+```bash
 python3 log_analyzer.py
+```
 
-# Terminal 3 – Start API
+## Terminal 3 – Start API
+```bash
 gunicorn app:app
+```
 
 ## Tests
 
 Run the test suite with pytest:
 
-  pytest
+```bash
+pytest
+```
 
 The repository includes both unit tests and integration tests under `tests/`.
 
@@ -129,7 +137,14 @@ The repository includes both unit tests and integration tests under `tests/`.
 - `log_analyzer.py` — main processing orchestration
 - `log_generator.py` — test log generator
 - `tests/` — unit and integration tests
-- `events_sample.json`, `metrics.json`, `analyzer_state.json` — sample data and state
+- 
+### State & Data Files
+- `events_sample.json` — seed data for log generation
+- `generator_state.json` — logger process state
+- `analyzer_state.json` — analyzer process state
+- `metrics.json` — aggregated metrics output
+- `alerts_detected.txt` - the alerts emitted by the analyzer
+- `warnings_detected.txt` - the warnings emitted by the analyzer
 
 ## Design Decisions
 
