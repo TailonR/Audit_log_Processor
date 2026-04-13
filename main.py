@@ -3,13 +3,23 @@ from dataclasses import dataclass
 from datetime import datetime
 import json
 import time
+from enum import Enum
 
-class ParseError:
-    OK = "OK"
-    CORRUPTED_LINE = "CORRUPTED_LINE"
+class ParseError(Enum):
+    INVALID_LOG_FORMAT = "INVALID_LOG_FORMAT"
     MALFORMED_TIMESTAMP = "MALFORMED_TIMESTAMP"
-    MISSING_FIELDS = "MISSING_FIELDS"
     INVALID_KEY_VALUE = "INVALID_KEY_VALUE"
+
+class ParseException(Exception):
+    def __init__(self, error_type, message=""):
+        super().__init__(message)
+        self.error_type = error_type
+
+ERROR_MAP = {
+    ParseError.MALFORMED_TIMESTAMP: "parse_fail_timestamp",
+    ParseError.INVALID_LOG_FORMAT: "invalid_log_format",
+    ParseError.INVALID_KEY_VALUE: "parse_fail_key_value",
+}
 
 @dataclass
 class AuditEvent:
@@ -18,71 +28,34 @@ class AuditEvent:
     event: str
     fields: dict
 
-def validate_line(line):
-    line = line.strip()
-    # 1. basic sanity
-    if not line or "????" in line:
-        return {
-            "result": ParseError.CORRUPTED_LINE,
-            "raw": line
-        }
-
-    parts = line.split(maxsplit=4)
-    if len(parts) < 5:
-        return {
-            "result": ParseError.MISSING_FIELDS,
-            "raw": line
-        }
-
-    date, time, _, _ = parts[:4]
-    rest = parts[4]
-
-    # 2. timestamp validation (try formats)
-    if not is_valid_timestamp(date, time):
-        return {
-            "result": ParseError.MALFORMED_TIMESTAMP,
-            "raw": line
-        }
-
-    # 3. key=value validation (if present)
-    pattern = r'(\w+)=(.*?)(?=\w+=|$)'
-    if re.fullmatch(pattern, ''.join(rest)) is None:
-        return {
-            "result": ParseError.INVALID_KEY_VALUE,
-            "raw": line
-        }
-
-    return { "result": ParseError.OK }
-
-def is_valid_timestamp(date, time):
-    try:
-        datetime.strptime(
-            f"{date} {time}",
-            "%Y-%m-%d %H:%M:%S"
-        )
-        return True
-    except ValueError:
-        return False
+LOG_PATTERN = re.compile(
+    r'(?P<date>\S+)\s+'
+    r'(?P<time>\S+)\s+'
+    r'(?P<level>INFO|WARN|ERROR|DEBUG)\s+'
+    r'(?P<event>[A-Z_]+)\s+'
+    r'(?P<kv>.+)'
+)
 
 def parse_kv(kv_string):
     fields = {}
-    for key_value in re.findall(r'(\w+)=(.*?)(?=\w+=|$)', kv_string):
+    kv_pairs = re.findall(r'(\w+)=(.*?)(?=\s+\w+=|$)', kv_string)
+
+    if not kv_pairs:
+        raise ParseException(ParseError.INVALID_KEY_VALUE, "No key-value pairs found")
+    
+    
+    for key_value in kv_pairs:
+        if not key_value[0] or not key_value[1]:
+            raise ParseException(ParseError.INVALID_KEY_VALUE, f"Invalid key-value pair: {key_value}")
+        
         fields[key_value[0].strip()] = key_value[1].strip()
     return fields
 
 
 def parse_line(line):
-    pattern = re.compile(
-        r'(?P<date>\S+)\s+'
-        r'(?P<time>\S+)\s+'
-        r'(?P<level>INFO|WARN|ERROR|DEBUG)\s+'
-        r'(?P<event>[A-Z_]+)\s*'
-        r'(?P<kv>.*)'
-    )
-
-    match = pattern.match(line.strip())
+    match = LOG_PATTERN.match(line.strip())
     if not match:
-        raise ValueError(f"Invalid log format: {line}")
+        raise ParseException(ParseError.INVALID_LOG_FORMAT, f"Invalid log format: {line}")
     
     data = match.groupdict()
 
@@ -92,13 +65,15 @@ def parse_line(line):
             "%Y-%m-%d %H:%M:%S"
         )
     except ValueError:
-        raise ValueError("Invalid timestamp")
+        raise ParseException(ParseError.MALFORMED_TIMESTAMP, f"Invalid timestamp: {line}")
+    
+    fields = parse_kv(data["kv"])  # Validate key-value pairs
 
     return AuditEvent(
         timestamp=timestamp,
         level=data["level"],
         event=data["event"],
-        fields=parse_kv(data["kv"])
+        fields=fields
     )
 
 def process_log_file(path):
@@ -106,9 +81,8 @@ def process_log_file(path):
     metrics = {
         "total_lines": 0,
         "parse_success": 0,
+        "invalid_log_format": 0,
         "parse_fail_timestamp": 0,
-        "parse_fail_corrupted_line": 0,
-        "parse_fail_missing_fields": 0,
         "parse_fail_key_value": 0
     }
 
@@ -118,27 +92,18 @@ def process_log_file(path):
          open('log_parse_failures.txt', 'w') as parse_fail_writer:
         for line in f:
             metrics["total_lines"] += 1
-            validation = validate_line(line)
-            if validation["result"] == ParseError.OK:
-                metrics["parse_success"] += 1
+            try:
                 event = parse_line(line)
                 events.append(event)
-
+                metrics["parse_success"] += 1
                 # Example: alerting rule
                 if event.event in ("LOAD_FAILURE", "AUTH_FAILURE"):
                     alerts_writer.write(f"{json.dumps({event.event: event.fields})}\n")
                 elif event.event in ("RECORD_WARNING"):
                     warnings_writer.write(f"{json.dumps({event.event: event.fields})}\n")
-            else:
-                if validation["result"] == ParseError.MALFORMED_TIMESTAMP:
-                    metrics["parse_fail_timestamp"] += 1
-                elif validation["result"] == ParseError.CORRUPTED_LINE:
-                    metrics["parse_fail_corrupted_line"] += 1
-                elif validation["result"] == ParseError.MISSING_FIELDS:
-                    metrics["parse_fail_missing_fields"] += 1
-                elif validation["result"] == ParseError.INVALID_KEY_VALUE:
-                    metrics["parse_fail_key_value"] += 1
-                parse_fail_writer.write(f"{json.dumps(validation)}\n")
+            except ParseException as e:
+                metrics[ERROR_MAP[e.error_type]] += 1
+                parse_fail_writer.write(f"{json.dumps({'error': str(e)})}\n")
 
     return { "events": events, "diagnostics": metrics }
 

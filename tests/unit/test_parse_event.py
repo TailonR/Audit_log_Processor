@@ -1,4 +1,4 @@
-from app import parse_event
+from log_generator import parse_event
 
 def test_parse_ok_event():
     event = {

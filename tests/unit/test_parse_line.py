@@ -1,4 +1,4 @@
-from main import parse_line
+from main import parse_line, ParseException, ParseError
 import pytest
 
 def test_parse_line_success():
@@ -16,31 +16,50 @@ def test_parse_line_timestamp():
     assert event.timestamp.year == 2026
     assert event.timestamp.hour == 8
 
-def test_parse_line_invalid_timestamp():
-    line = "2026-04-09 INFO LOAD_START user=admin"
-    with pytest.raises(ValueError):
+def test_parse_line_invalid_timestamp_1():
+    line = "2026-04-09 fwefwfw INFO LOAD_START user=admin"
+    with pytest.raises(ParseException) as exc_info:
         parse_line(line)
+
+    assert exc_info.value.error_type == ParseError.MALFORMED_TIMESTAMP
+
+def test_parse_line_invalid_timestamp_2():
+    line = "2026-04-09 INFO LOAD_START user=admin"
+    with pytest.raises(ParseException) as exc_info:
+        parse_line(line)
+
+    assert exc_info.value.error_type == ParseError.INVALID_LOG_FORMAT
 
 def test_parse_line_missing_log_level():
     line = "2026-04-09 08:15:30 LOAD_START user=admin"
-    with pytest.raises(ValueError):
+    with pytest.raises(ParseException) as exc_info:
         parse_line(line)
+
+    assert exc_info.value.error_type == ParseError.INVALID_LOG_FORMAT
 
 def test_parse_line_bad_log_level():
     line = "2026-04-09 08:15:30 BAD LOAD_START user=admin"
-    with pytest.raises(ValueError):
+    with pytest.raises(ParseException) as exc_info:
         parse_line(line)
+
+    assert exc_info.value.error_type == ParseError.INVALID_LOG_FORMAT
 
 def test_parse_line_missing_event():
     line = "2026-04-09 08:15:30 INFO user=admin"
-    with pytest.raises(ValueError):
+    with pytest.raises(ParseException) as exc_info:
         parse_line(line)
+
+    assert exc_info.value.error_type == ParseError.INVALID_LOG_FORMAT
 
 def test_parse_line_missing_message():
     line = "2026-04-09 08:15:30 INFO"
-    with pytest.raises(ValueError):
+    with pytest.raises(ParseException) as exc_info:
         parse_line(line)
 
+    assert exc_info.value.error_type == ParseError.INVALID_LOG_FORMAT
+
 def test_parse_line_invalid():
-    with pytest.raises(Exception):
+    with pytest.raises(ParseException) as exc_info:
         parse_line("invalid line")
+
+    assert exc_info.value.error_type == ParseError.INVALID_LOG_FORMAT
