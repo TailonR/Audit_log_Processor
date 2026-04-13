@@ -97,13 +97,15 @@ Gracefully signals the analyzer to stop
 
 1. Create a Python 3.10+ virtual environment:
 
-   python3 -m venv .venv
-   source .venv/bin/activate
-
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 2. Install dependencies:
 
+```bash
    pip install -r requirements.txt
-
+```
 # Running the System (Local Dev)
 
 ## Terminal 1 – Start log generator
